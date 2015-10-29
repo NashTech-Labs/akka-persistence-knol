@@ -1,0 +1,22 @@
+# build system
+target/
+.history
+pom.xml.versionsBackup
+
+# Eclipse
+.cache
+.classpath
+.project
+.scala_dependencies
+.settings
+.target/
+.bin
+
+# Intellij
+*.idea
+*.iml
+
+# Misc
+*.log
+*~
+
