@@ -3,8 +3,8 @@ package com.knoldus.domain
 import java.util.UUID
 
 import akka.actor.{ActorSystem, Props}
+import com.knoldus.domain.user.Protocols.{ChangeEmail, CreateUser, Print}
 import com.knoldus.domain.user.UserProcessor
-import com.knoldus.domain.user.Protocols.{Print, ChangeEmail, CreateUser}
 
 object Boot extends App {
   val system = ActorSystem("user-management")

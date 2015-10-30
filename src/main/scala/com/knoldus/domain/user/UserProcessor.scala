@@ -1,12 +1,19 @@
 package com.knoldus.domain.user
 
-import com.knoldus.domain.AggregateRoot
 import com.knoldus.domain.user.Protocols._
+import com.knoldus.domain.{AggregateRoot, Event}
 
-class UserProcessor extends AggregateRoot[State] {
+class UserProcessor extends AggregateRoot[State, User] {
   def persistenceId: String = "user-persistence-processor"
 
   state = State()
+
+  val factory: AggregateRootFactory = {
+    case UserCreated(id, firstName, lastName, email) =>
+      User(id, firstName, lastName, email)
+    case EmailChanged(id, newEmail)                 =>
+      state.get(id).get.copy(email = newEmail)
+  }
 
   val receiveRecover: Receive = {
     case event: UserCreated  =>
@@ -18,11 +25,16 @@ class UserProcessor extends AggregateRoot[State] {
   }
 
   val receiveCommand: Receive = {
-    case command: CreateUser  =>
-      persist(UserCreated(command.id, command.firstName, command.lastName, command.email))(event => updateState(event))
-    case command: ChangeEmail =>
-      persist(EmailChanged(command.id, command.newEmail))(event => updateState(event))
-    case Print                =>
+    case CreateUser(id, firstName, lastName, email) =>
+      persist(UserCreated(id, firstName, lastName, email))(event => updateState(event))
+    case ChangeEmail(id, newEmail)                  =>
+      persist(EmailChanged(id, newEmail))(event => updateState(event))
+    case Print                                      =>
       log.info(s"current state is $state")
+  }
+
+  protected def updateState(event: Event): Unit = {
+    val newState = state.update(factory(event))
+    state = newState
   }
 }

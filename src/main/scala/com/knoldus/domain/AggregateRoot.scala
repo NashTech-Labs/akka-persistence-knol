@@ -3,17 +3,15 @@ package com.knoldus.domain
 import akka.actor.ActorLogging
 import akka.persistence.PersistentActor
 
-trait AggregateState {
-  def update: PartialFunction[Event, AggregateState]
-}
+trait AggregateState
 
-trait AggregateRoot[S <: AggregateState] extends PersistentActor with ActorLogging {
+trait AggregateRoot[S <: AggregateState, E <: Entity] extends PersistentActor with ActorLogging {
+  type AggregateRootFactory = PartialFunction[Event, E]
   var state: S = _
 
-  protected def updateState(event: Event): Unit = {
-    val newState = state.update(event)
-    state = newState.asInstanceOf[S]
-  }
+  val factory: AggregateRootFactory
+
+  protected def updateState(event: Event): Unit
 
   def publish(event: Event): Unit =
     context.system.eventStream.publish(event)
